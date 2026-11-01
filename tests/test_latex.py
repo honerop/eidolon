@@ -29,12 +29,12 @@ class LatexTests(unittest.TestCase):
     def test_real_latex_expressions_are_valid(self):
         cases = [
             r"E=mc^{2}",
-            r"\\frac{d}{dx}x^{2}=2x",
-            r"\\int_{0}^{\\infty}e^{-x}\\,dx=1",
-            r"\\sum_{n=1}^{\\infty}\\frac{1}{n^{2}}=\\frac{\\pi^{2}}{6}",
-            r"\\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix}",
-            r"\\begin{cases}x^{2}&x>0\\\\0&x\\le0\\end{cases}",
-            r"\\left(\\alpha+\\beta\\right)^{2}",
+            r"\frac{d}{dx}x^{2}=2x",
+            r"\int_{0}^{\\infty}e^{-x}\\,dx=1",
+            r"\sum_{n=1}^{\\infty}\\frac{1}{n^{2}}=\\frac{\\pi^{2}}{6}",
+            r"\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix}",
+            r"\begin{cases}x^{2}&x>0\\\\0&x\\le0\\end{cases}",
+            r"\left(\\alpha+\\beta\\right)^{2}",
         ]
         for expression in cases:
             with self.subTest(expression=expression):
@@ -42,13 +42,13 @@ class LatexTests(unittest.TestCase):
 
     def test_blocks_tex_primitives_and_invalid_input(self):
         cases = [
-            r"\\input{/etc/passwd}", r"\\include{secret}", r"\\write18{anything}",
-            r"\\def\\evil{boom}", r"\\csname input\\endcsname",
-            r"\\catcode", r"\\usepackage{shellesc}",
-            r"\\begin{document}hello\\end{document}",
-            r"\\begin{bmatrix} 1",
-            r"\\notacommand{x}", r"E=mc^2 % hidden content",
-            r"\\frac{a}{b}^^5c",
+            r"\input{/etc/passwd}", r"\include{secret}", r"\write18{anything}",
+            r"\def\\evil{boom}", r"\csname input\\endcsname",
+            r"\catcode", r"\usepackage{shellesc}",
+            r"\begin{document}hello\\end{document}",
+            r"\begin{bmatrix} 1",
+            r"\notacommand{x}", r"E=mc^2 % hidden content",
+            r"\frac{a}{b}^^5c",
             "$E=mc^2$", "", "x"*1201,
         ]
         for expression in cases:
@@ -77,7 +77,7 @@ class LatexTests(unittest.TestCase):
         project = {"width": 640, "height": 360, "scenes": [{
             "duration": 3, "educational": {
                 "type": "neuron",
-                "callouts": [{"latex": r"\\Delta V", "position": [.5,.8]}]}
+                "callouts": [{"latex": r"\Delta V", "position": [.5,.8]}]}
         }]}
         result = education.expand_project(project)
         self.assertTrue(any(e.get("kind") == "latex" for e in result["scenes"][0]["elements"]))
@@ -89,7 +89,7 @@ class LatexTests(unittest.TestCase):
         def fake_render(source, shade, dest):
             calls.append((source, shade))
             Path(dest).write_bytes(png)
-        element = {"kind": "latex", "value": r"\\frac{a}{b}", "x": 300,
+        element = {"kind": "latex", "value": r"\frac{a}{b}", "x": 300,
                    "y": 120, "font_size": 40, "fill": "cyan",
                    "from": {"opacity": 0}, "to": {"opacity": 100},
                    "start_percent": 5, "end_percent": 30}
@@ -99,7 +99,7 @@ class LatexTests(unittest.TestCase):
             with patch.object(latex, "_render_uncached", side_effect=fake_render):
                 first = latex.compile_element(element, work, cache)
                 second = latex.compile_element(element, work, cache)
-            self.assertEqual(calls, [(r"\\frac{a}{b}", "cyan")])
+            self.assertEqual(calls, [(r"\frac{a}{b}", "cyan")])
             self.assertEqual(first, second)
             self.assertEqual(first["kind"], "latex_image")
             self.assertEqual(first["from"], {"opacity": 0})
@@ -110,7 +110,7 @@ class LatexTests(unittest.TestCase):
     def test_no_tex_required_for_inspect(self):
         project = {"width": 640, "height": 360, "scenes": [{
             "duration": 2, "educational": {"type": "equation",
-                    "formulas": [{"latex": r"\\sum_{i=1}^{n}i"}]}
+                    "formulas": [{"latex": r"\sum_{i=1}^{n}i"}]}
         }]}
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "math.json"
@@ -120,7 +120,7 @@ class LatexTests(unittest.TestCase):
 
     def test_inspect_rejects_dangerous_latex(self):
         project = {"scenes": [{"duration": 2, "elements": [{
-            "kind": "latex", "value": r"\\input{secret.txt}", "x": 5, "y": 5
+            "kind": "latex", "value": r"\input{secret.txt}", "x": 5, "y": 5
         }]}]}
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "math.json"
@@ -142,9 +142,8 @@ class LatexTests(unittest.TestCase):
             src.write_text(json.dumps(project), encoding="utf-8")
             with patch.object(latex, "_render_uncached",
                               side_effect=lambda s, c, p: Path(p).write_bytes(png)):
-                with patch.object(latex, "cache_root", return_value=Path(td) / "cache"):
-                    assets.prepare(src, dest)
-            data = json.loads(dest.read_text())
+                data = latex.materialize_project(copy.deepcopy(project), dest.parent,
+                                                 cache=Path(td) / "cache")
             self.assertEqual(data["scenes"][0]["elements"][0]["kind"], "latex_image")
             self.assertTrue((dest.parent / data["scenes"][0]["elements"][0]["src"]).exists())
         self.assertEqual(project, original)
