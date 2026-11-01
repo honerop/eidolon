@@ -197,8 +197,17 @@ def compile_element(element, output_dir, cache=None):
     source = element["value"]
     key = hashlib.sha256(json.dumps([CACHE_VERSION, source, shade, DPI],
                                     ensure_ascii=False).encode("utf-8")).hexdigest()[:32]
-    cache = Path(cache) if cache is not None else cache_root()
-    cache.mkdir(parents=True, exist_ok=True)
+    explicit_cache = cache is not None
+    cache = Path(cache) if explicit_cache else cache_root()
+    try:
+        cache.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        if explicit_cache:
+            raise LatexError(f"cannot create LaTeX cache: {cache}: {exc}") from exc
+        # Nix sandbox builds commonly set HOME=/homeless-shelter, which is
+        # intentionally not writable. Keep their cache in the render workspace.
+        cache = Path(output_dir) / ".latex-cache"
+        cache.mkdir(parents=True, exist_ok=True)
     cached = cache / ("latex-" + key + ".png")
     if not cached.exists():
         temporary = cache / ("latex-" + key + ".tmp.png")
