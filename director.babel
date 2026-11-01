@@ -111,9 +111,10 @@ plot_y s x = if == sv s "function" "quadratic" "sin" + * iv s "a" 1 sin100 + x *
 plot_points s i last text = if > i last text plot_points s + i 1 last j5 text str cx s plotx s i "," str cy s plot_y s plotx s i " "
 plot_shape s frame total = j4 "<polyline fill=\"none\" points=\"" plot_points s 0 / * 180 localpct s pct frame total 100 "" "\"" j3 stroke s alpha s frame total "/>"
 point p = j3 str iv p "x" 0 "," str iv p "y" 0
-poly_points ps i result = if >= i size ps result poly_points ps + i 1 j3 result point get ps i " "
-poly_shape s = j4 "<polyline fill=\"none\" points=\"" poly_points field s "points" 0 "" concat "\"" stroke s "/>"
-shape_svg s frame total = if == sv s "kind" "" "rect" rect_shape s frame total if == sv s "kind" "" "circle" circle_shape s frame total if == sv s "kind" "" "line" line_shape s frame total if == sv s "kind" "" "arrow" line_shape s frame total if == sv s "kind" "" "text" text_shape s frame total if == sv s "kind" "" "axes" axes_shape s if == sv s "kind" "" "plot" plot_shape s frame total if == sv s "kind" "" "polyline" poly_shape s ""
+poly_points ps i last result = if >= i last result poly_points ps + i 1 last j3 result point get ps i " "
+poly_count s frame total = if and hasfield s "reveal" asbool field s "reveal" / * size field s "points" localpct s pct frame total 100 size field s "points"
+poly_shape s frame total = j4 "<polyline fill=\"none\" points=\"" poly_points field s "points" 0 poly_count s frame total "" concat "\"" stroke s concat alpha s frame total "/>"
+shape_svg s frame total = if and >= pct frame total iv s "visible_start_percent" 0 <= pct frame total iv s "visible_end_percent" 100 if == sv s "kind" "" "rect" rect_shape s frame total if == sv s "kind" "" "circle" circle_shape s frame total if == sv s "kind" "" "line" line_shape s frame total if == sv s "kind" "" "arrow" line_shape s frame total if == sv s "kind" "" "text" text_shape s frame total if == sv s "kind" "" "axes" axes_shape s if == sv s "kind" "" "plot" plot_shape s frame total if == sv s "kind" "" "polyline" poly_shape s frame total "" ""
 append_shape acc shape = put acc "svg" boxstr concat astext field acc "svg" shape_svg shape iv acc "local" 0 iv acc "total" 1
 scene_svg meta = astext field fold "append_shape" put put put record _ "svg" boxstr "" "local" field meta "local" "total" field field meta "scene" "frames" if hasfield field meta "scene" "elements" field field meta "scene" "elements" array _ "svg"
 svg_bg meta = if scene_has_media field meta "scene" "" j4 "<rect width=\"100%\" height=\"100%\" fill=\"" palette sv field meta "scene" "background" "ink" "\"/>" ""
