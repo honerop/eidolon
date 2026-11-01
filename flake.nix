@@ -52,6 +52,10 @@
           export EIDOLON_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
           export FONTCONFIG_FILE="${fonts}"
           export EIDOLON_WORK="$(mktemp -d)"
+          if [ -z "''${XDG_CACHE_HOME-}" ] && [ ! -w "''${HOME:-/nonexistent}" ]; then
+            export XDG_CACHE_HOME="$EIDOLON_WORK/cache"
+            mkdir -p "$XDG_CACHE_HOME"
+          fi
           trap 'rm -rf "$EIDOLON_WORK"' EXIT
           if [ "''${1-}" = "images" ]; then
             shift
