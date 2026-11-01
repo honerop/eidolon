@@ -224,7 +224,7 @@ Any existing scene can also contain a **first-class formula element**:
 
 Note: the JSON source above escapes a LaTeX backslash as `\\`.
 For example, `"value": "\\frac{a}{b}"` in a JSON file becomes the
-LaTeX string `\\frac{a}{b}`.
+LaTeX string `\frac{a}{b}`.
 
 You can put mathematical callouts on diagrams or graphs:
 
