@@ -124,6 +124,11 @@
             test -s smoke.srt
             ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke.mp4 > info.json
             grep -q h264 info.json
+            # Exercise every semantic educational scene through Babel and FFmpeg.
+            "${app}/bin/eidolon" "${./examples/education-smoke.json}" "education-smoke.mp4"
+            test -s education-smoke.mp4
+            test -s education-smoke.srt
+            ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name -of csv=p=0 education-smoke.mp4 | grep -q h264
           '';
         });
 
