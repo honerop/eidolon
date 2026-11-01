@@ -226,6 +226,16 @@ def prepare(source, target, attribution_path=None, cache_dir=None):
     if not isinstance(project, dict) or not isinstance(project.get("scenes"), list):
         raise AssetError("Video JSON must contain a scenes array")
     root = source.parent
+    # Semantic scenes are expanded before resolving assets, while paths still
+    # refer to the original project directory.
+    import importlib.util
+    edu_spec = importlib.util.spec_from_file_location("eidolon_education", Path(__file__).with_name("education.py"))
+    edu = importlib.util.module_from_spec(edu_spec)
+    edu_spec.loader.exec_module(edu)
+    try:
+        project = edu.expand_project(project)
+    except edu.EducationError as exc:
+        raise AssetError(str(exc)) from exc
     credits = []
     if "music" in project:
         project["music"] = _absolute(project["music"], root)
