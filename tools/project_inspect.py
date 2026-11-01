@@ -71,6 +71,14 @@ def analyze(path):
             problems.append(f"{name} must be a positive integer")
     if _positive_int(width) and _positive_int(height) and (width % 2 or height % 2):
         warnings.append("H.264 yuv420p requires even dimensions: use even width and height")
+    latex_path = Path(os.environ.get("EIDOLON_LATEX_SOURCE", str(Path(__file__).with_name("latex_assets.py"))))
+    latex_spec = importlib.util.spec_from_file_location("eidolon_latex", latex_path)
+    latex = importlib.util.module_from_spec(latex_spec)
+    latex_spec.loader.exec_module(latex)
+    try:
+        latex.validate_project(project)
+    except latex.LatexError as exc:
+        problems.append(str(exc))
     scenes = project.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         problems.append("scenes must be a nonempty array")
