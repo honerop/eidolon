@@ -262,6 +262,45 @@
           }
         ]
       }
+    },
+    {
+      "duration": 6,
+      "background": "navy",
+      "narration": "A simplified neuron model updates its potential by combining the previous potential, a decay factor, and new input. If the potential reaches a threshold, the model records a spike.",
+      "educational": {
+        "type": "equation",
+        "title": "The integrate-and-fire equation",
+        "formulas": [
+          {
+            "latex": "V_{t+1}=\\lambda V_t+I_t",
+            "position": [
+              0.5,
+              0.43
+            ],
+            "font_size": 58,
+            "color": "cyan"
+          },
+          {
+            "latex": "V_{t+1}\\ge\\theta\\Rightarrow\\mathrm{spike}",
+            "position": [
+              0.5,
+              0.67
+            ],
+            "font_size": 45,
+            "color": "orange"
+          }
+        ],
+        "callouts": [
+          {
+            "text": "Simplified discrete model",
+            "position": [
+              0.12,
+              0.91
+            ],
+            "color": "muted"
+          }
+        ]
+      }
     }
   ]
 }
