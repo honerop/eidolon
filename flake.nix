@@ -62,6 +62,7 @@
         in pkgs.writeShellScriptBin "eidolon" ''
           set -euo pipefail
           export EIDOLON_DEFAULT_SPEC="${./examples/general-showcase.json}"
+          export EIDOLON_EDUCATION_SOURCE="${./tools/education.py}"
           export EIDOLON_EDGE_TTS="${python}/bin/edge-tts"
           export EIDOLON_ESPEAK="${pkgs.espeak-ng}/bin/espeak-ng"
           export EIDOLON_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
