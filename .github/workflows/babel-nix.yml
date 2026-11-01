@@ -1,4 +1,4 @@
-name: Babel Nix native build
+name: Zig Nix native build
 
 on:
   pull_request:
@@ -6,16 +6,11 @@ on:
     paths:
       - flake.nix
       - flake.lock
-      - director.babel
-      - tools/education.py
-      - tools/media_assets.py
-      - tools/project_inspect.py
-      - tests/test_education.py
-      - tools/latex_assets.py
-      - tests/test_latex.py
-      - examples/latex-smoke.json
-      - examples/education-smoke.json
-      - .github/workflows/ain-nix.yml
+      - 'src/**'
+      - 'tools/**'
+      - 'tests/**'
+      - 'examples/**'
+      - .github/workflows/babel-nix.yml
   workflow_dispatch:
 
 jobs:
@@ -24,9 +19,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Resolve Babel compiler input
-        run: |
-          nix flake lock
-          cat flake.lock
-      - name: Compile Babel and render offline smoke MP4
+      - name: Compile Zig and render offline smoke MP4
         run: nix flake check -L
