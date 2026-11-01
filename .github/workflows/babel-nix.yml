@@ -7,6 +7,11 @@ on:
       - flake.nix
       - flake.lock
       - director.babel
+      - tools/education.py
+      - tools/media_assets.py
+      - tools/project_inspect.py
+      - tests/test_education.py
+      - examples/education-smoke.json
       - .github/workflows/ain-nix.yml
   workflow_dispatch:
 
