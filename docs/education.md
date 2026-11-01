@@ -172,6 +172,104 @@ an arbitrary current per discrete step; it is not calibrated to physical
 amperes, membrane voltages, or biological time. It is for conceptual
 education, not neuroscience research or clinical interpretation.
 
+## 7. LaTeX equations and mathematical annotations
+
+Math uses a real LaTeX engine, not Unicode approximations. Equations can
+show fractions, radicals, integrals, sums, Greek letters, matrices, and AMS
+math layouts, with optional animated appearances.
+
+A full semantic equation scene:
+
+```json
+{
+  "duration": 5,
+  "narration": "This equation describes energy in terms of mass.",
+  "educational": {
+    "type": "equation",
+    "title": "Mass-energy equivalence",
+    "formulas": [
+      {
+        "latex": "E=mc^{2}",
+        "position": [0.5, 0.5],
+        "font_size": 72,
+        "color": "cyan"
+      }
+    ]
+  }
+}
+```
+
+`position` is a normalized canvas coordinate between 0 and 1;
+`font_size` is the nominal 12–128 pixel-scale text size. Multiple formulas
+appear progressively. Unicode can be used in surrounding captions; TeX
+operators should use the standard backslash commands in the formula itself.
+
+Any existing scene can also contain a **first-class formula element**:
+
+```json
+{
+  "kind": "latex",
+  "value": "\\frac{d}{dt}V_m",
+  "x": 650,
+  "y": 400,
+  "font_size": 56,
+  "fill": "white",
+  "anchor": "center",
+  "from": {"opacity": 0},
+  "to": {"opacity": 100},
+  "start_percent": 20,
+  "end_percent": 50
+}
+```
+
+Note: the JSON source above escapes a LaTeX backslash as `\\`.
+For example, `"value": "\\\\frac{a}{b}"` in a JSON file becomes the
+LaTeX string `\\frac{a}{b}`.
+
+You can put mathematical callouts on diagrams or graphs:
+
+```json
+"callouts": [
+  {
+    "latex": "f(t)=\\\\sin(\\\\omega t)",
+    "position": [0.5, 0.9],
+    "color": "ice"
+  }
+]
+```
+
+For direct elements, `x`/`y` are integer canvas pixels at the formula's
+vertical center; `anchor` controls horizontal alignment (`left`,
+`center` or `right`). `max_width` optionally caps displayed width
+while retaining the mathematical aspect ratio.
+
+**Rendering:** During project preparation, Eidolon validates markup,
+runs `pdflatex` with shell escape disabled, converts the cropped result
+into a transparent PNG using `pdftocairo`, and caches the PNG under
+`$XDG_CACHE_HOME/eidolon/latex` (default `~/.cache/eidolon/latex`).
+Only new or changed formulas need TeX compilation. Babel embeds references
+to these images in its per-frame SVG, so graphics, appearance animation,
+narration, and FFmpeg export remain part of the existing pipeline.
+`inspect` validates formula syntax without launching TeX.
+
+For deterministic builds, use the Nix wrapper. It supplies the LaTeX,
+AMS packages, xcolor, and Poppler tools automatically.
+`examples/latex-smoke.json` demonstrates formulas, a definite integral,
+a matrix, and a graph with a mathematical callout:
+
+```sh
+nix run . -- inspect examples/latex-smoke.json
+nix run . -- examples/latex-smoke.json latex.mp4
+```
+
+**Security and scope:** This supports a *restricted math subset*, not arbitrary
+TeX documents. Allowed math commands and math environments are whitelisted;
+file access, macro definitions, shell escape, packages, and special primitives
+are excluded. LaTeX itself is complex and should not be treated as a secure
+sandbox for untrusted projects. Render unknown input in a separately restricted
+process or container. There is no TikZ, PStricks, general document compilation,
+or complete custom macro support.
+
 ## Design boundaries
 
 The educational compiler produces ordinary scene `elements`; it is not a
