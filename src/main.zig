@@ -64,7 +64,9 @@ const Renderer = struct {
         const c = struct {
             extern "c" fn system([*:0]const u8) c_int;
         };
-        if (c.system(try self.a.dupeZ(u8, command)) == 0) return mp3;
+        if (!s.eq(s.env("EIDOLON_OFFLINE_TTS", ""), "1")) {
+            if (c.system(try self.a.dupeZ(u8, command)) == 0) return mp3;
+        }
         const wav = try self.indexed("voice", index, "wav");
         try s.run(self.a, fallback, &.{ "-v", "en-us", "-s", "155", "-w", wav, text });
         return wav;
