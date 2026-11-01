@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -53,7 +54,8 @@ def analyze(path):
                 "problems": ["JSON root must be an object"], "warnings": [],
                 "scenes": [], "frames_estimate": 0}
     import importlib.util
-    edu_spec = importlib.util.spec_from_file_location("eidolon_education", Path(__file__).with_name("education.py"))
+    edu_path = Path(os.environ.get("EIDOLON_EDUCATION_SOURCE", str(Path(__file__).with_name("education.py"))))
+    edu_spec = importlib.util.spec_from_file_location("eidolon_education", edu_path)
     edu = importlib.util.module_from_spec(edu_spec)
     edu_spec.loader.exec_module(edu)
     try:
