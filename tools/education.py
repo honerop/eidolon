@@ -333,7 +333,26 @@ RENDERERS = {
     "signal": signal,
     "neuron": neuron,
     "simulation": simulation,
+    "equation": equation,
 }
+
+
+def equation(spec, width, height):
+    formulas = bounded_list(spec.get("formulas"), "equation.formulas", 1, 12)
+    out = []
+    for index, item in enumerate(formulas):
+        if not isinstance(item, dict):
+            fail("equation formulas must be objects")
+        value = text(item.get("latex"), "equation.formula.latex", 1200)
+        x, y = point(item.get("position", [.5, .45 + .10 * index]),
+                     "equation.formula.position", width, height)
+        shade = color(item.get("color", "white"))
+        size = int(number(item.get("font_size", 54), "equation.formula.font_size", 12, 128))
+        out.append(_fade({"kind": "latex", "value": value, "x": x, "y": y,
+                          "font_size": size, "fill": shade,
+                          "anchor": "center"},
+                         min(90, 5 + index*14), min(100, 43 + index*14)))
+    return out
 
 
 def callouts(spec, width, height):
@@ -342,10 +361,15 @@ def callouts(spec, width, height):
         if not isinstance(item, dict):
             fail("callout must be an object")
         x, y = point(item.get("position"), "callout.position", width, height)
-        out.append(_fade(label(text(item.get("text"), "callout.text", 100),
-                               x, y, _caption_size(height),
-                               color(item.get("color", "ice"))),
-                         min(90, 6+i*9), min(100, 37+i*9)))
+        shade = color(item.get("color", "ice"))
+        if "latex" in item:
+            rendered = {"kind": "latex", "value": text(item["latex"], "callout.latex", 1200),
+                        "x": x, "y": y, "font_size": max(14, _caption_size(height)),
+                        "anchor": "center", "fill": shade}
+        else:
+            rendered = label(text(item.get("text"), "callout.text", 100),
+                             x, y, _caption_size(height), shade)
+        out.append(_fade(rendered, min(90, 6+i*9), min(100, 37+i*9)))
     return out
 
 
