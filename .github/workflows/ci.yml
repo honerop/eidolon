@@ -21,3 +21,16 @@ jobs:
           nix develop -c sh -c 'zig version; zig test src/support.zig -lc; zig test src/svg.zig -lc; zig test src/main.zig -lc'
       - name: Build Zig director and render MP4
         run: nix flake check -L
+      - name: Verify images, video, scene audio, and mixed music
+        run: |
+          nix develop -c bash -euo pipefail -c '
+            mkdir -p examples/fixtures
+            ffmpeg -hide_banner -loglevel error -y -f lavfi -i "color=c=red:s=96x96" -frames:v 1 examples/fixtures/still.png
+            ffmpeg -hide_banner -loglevel error -y -f lavfi -i "testsrc2=s=96x64:r=4:d=2" -c:v mpeg4 examples/fixtures/clip.mp4
+            ffmpeg -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=550:duration=0.7" examples/fixtures/sound.wav
+            ffmpeg -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=190:duration=2" examples/fixtures/music.wav
+            EIDOLON_SKIP_TTS=1 nix run . -- examples/general-media-smoke.json montage.mp4
+            test -s montage.mp4
+            ffprobe -v error -show_entries stream=codec_type -of csv=p=0 montage.mp4 | grep -qx audio
+            ffprobe -v error -show_entries stream=width,height -of csv=p=0 montage.mp4 | grep -qx "160,96"
+          '
