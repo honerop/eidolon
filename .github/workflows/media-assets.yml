@@ -7,6 +7,10 @@ on:
       - tests/test_media_assets.py
       - tests/test_project_inspect.py
       - tools/project_inspect.py
+      - tools/education.py
+      - tests/test_education.py
+      - examples/neuroscience-education.json
+      - examples/education-smoke.json
       - examples/commons-image.json
       - .github/workflows/media-assets.yml
       - flake.nix
