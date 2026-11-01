@@ -3,7 +3,7 @@
 Educational scenes let scripts and LLMs describe **what to explain**, rather
 than calculate every SVG coordinate or every frame. The compiler is offline,
 deterministic, and part of Eidolon's JSON preparation stage. The final timeline,
-frames, narration, audio mixing, and MP4 export still run through Babel.
+frames, narration, audio mixing, and MP4 export run through the Zig renderer.
 
 ## Quick start
 
@@ -247,7 +247,7 @@ while retaining the mathematical aspect ratio.
 runs `pdflatex` with shell escape disabled, converts the cropped result
 into a transparent PNG using `pdftocairo`, and caches the PNG under
 `$XDG_CACHE_HOME/eidolon/latex` (default `~/.cache/eidolon/latex`).
-Only new or changed formulas need TeX compilation. Babel embeds references
+Only new or changed formulas need TeX compilation. Zig embeds references
 to these images in its per-frame SVG, so graphics, appearance animation,
 narration, and FFmpeg export remain part of the existing pipeline.
 `inspect` validates formula syntax without launching TeX.
@@ -273,7 +273,7 @@ or complete custom macro support.
 ## Design boundaries
 
 The educational compiler produces ordinary scene `elements`; it is not a
-second renderer. The same Babel output path creates the final MP4. Its
+second renderer. The Zig output path creates the final MP4. Its
 implementation uses Python from the standard library as an authoring adapter,
 like the existing Commons asset adapter. No network or LLM calls are needed.
 
@@ -284,9 +284,9 @@ The renderer's existing 18,000-frame ceiling still applies.
 
 Current output remains SVG-based, with integer pixel coordinates. Polylines
 reveal by adding samples, not continuous stroke interpolation. There is no
-LaTeX typesetter, physical simulation engine, automatic word wrapping,
+unrestricted TeX, physical simulation engine, automatic word wrapping,
 or arbitrary 2D/3D coordinate transform yet. These can be added as
-separate semantic scene types without changing the JSON-to-Babel boundary.
+separate semantic scene types without changing the JSON-to-Zig boundary.
 
 ## Integration and testing
 
