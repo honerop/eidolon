@@ -10,7 +10,7 @@ on:
       - 'tools/**'
       - 'tests/**'
       - 'examples/**'
-      - .github/workflows/babel-nix.yml
+      - .github/workflows/zig-nix.yml
   workflow_dispatch:
 
 jobs:

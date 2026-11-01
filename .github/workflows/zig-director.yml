@@ -6,7 +6,7 @@ on:
       - 'src/**'
       - 'flake.nix'
       - 'examples/**'
-      - '.github/workflows/babel-director.yml'
+      - '.github/workflows/zig-director.yml'
   pull_request:
   workflow_dispatch:
 
