@@ -125,11 +125,17 @@ specifying individual frames or drawing coordinates. A deterministic compiler
 (`tools/education.py`) expands each `educational` scene into ordinary
 Babel-rendered shapes and animations. Existing `elements` still work.
 
+LaTeX math is also supported: `educational.type: "equation"`,
+`elements.kind: "latex"`, and mathematical callouts on diagrams and
+graphs. Formulas use real TeX typesetting and cached transparent PNG assets,
+while Babel renders the final SVG frames and animation.
+
 Supported educational scene types: **diagram** (connected concepts),
 **neuron** (labeled cell and traveling pulse), **signal** (moving event along
 a path), **graph** (multiple data series with progressive reveal),
 **timeline** (ordered events), **comparison** (animated bars), and
-**simulation** (leaky integrate-and-fire neuronal model). Callouts and a
+**simulation** (leaky integrate-and-fire neuronal model), and
+**equation** (progressively appearing LaTeX formulas). Callouts and a
 scene heading are available for every type. This is a semantic authoring
 layer, not an AI service.
 
