@@ -52,6 +52,15 @@ def analyze(path):
         return {"ok": False, "source": str(source),
                 "problems": ["JSON root must be an object"], "warnings": [],
                 "scenes": [], "frames_estimate": 0}
+    import importlib.util
+    edu_spec = importlib.util.spec_from_file_location("eidolon_education", Path(__file__).with_name("education.py"))
+    edu = importlib.util.module_from_spec(edu_spec)
+    edu_spec.loader.exec_module(edu)
+    try:
+        project = edu.expand_project(project)
+    except edu.EducationError as exc:
+        return {"ok": False, "source": str(source), "problems": [str(exc)],
+                "warnings": [], "scenes": [], "frames_estimate": 0}
 
     width, height, fps = (project.get(k, d) for k, d in
                           (("width", 1280), ("height", 720), ("fps", 30)))
