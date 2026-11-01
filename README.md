@@ -135,9 +135,9 @@ Zig: timeline, animation, SVG and SVG/image composition
 H.264 MP4 + SRT
 ```
 
-The former `director.babel`, `preview.babel` and `render.babel` programs are
-historical sources, not executed by the current Nix package. Zig source lives
-in `src/`. No Babel compiler is downloaded by the new build.
+The former Babel programs have been retired from the working tree and remain
+available through Git history. The maintained renderer is entirely in `src/`.
+No Babel compiler is downloaded or executed by the Zig build.
 
 The renderer still uses frame-by-frame SVG/PNG intermediates and has the old
 18,000-frame ceiling. A streaming pipeline is the next performance step.
