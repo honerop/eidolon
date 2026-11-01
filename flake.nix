@@ -108,6 +108,10 @@
             test -s education.mp4
             "${app}/bin/eidolon" "${./examples/latex-smoke.json}" latex.mp4
             test -s latex.mp4
+            EIDOLON_SKIP_TTS=0 EIDOLON_OFFLINE_TTS=1 "${app}/bin/eidolon" "${./examples/babel-voice-smoke.json}" narration.mp4
+            test -s narration.mp4
+            test -s narration.srt
+            ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_type -of csv=p=0 narration.mp4 | grep -qx audio
             ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name -of csv=p=0 latex.mp4 | grep -q h264
           '';
         });
