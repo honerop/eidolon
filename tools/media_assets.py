@@ -229,7 +229,8 @@ def prepare(source, target, attribution_path=None, cache_dir=None):
     # Semantic scenes are expanded before resolving assets, while paths still
     # refer to the original project directory.
     import importlib.util
-    edu_spec = importlib.util.spec_from_file_location("eidolon_education", Path(__file__).with_name("education.py"))
+    edu_path = Path(os.environ.get("EIDOLON_EDUCATION_SOURCE", str(Path(__file__).with_name("education.py"))))
+    edu_spec = importlib.util.spec_from_file_location("eidolon_education", edu_path)
     edu = importlib.util.module_from_spec(edu_spec)
     edu_spec.loader.exec_module(edu)
     try:
