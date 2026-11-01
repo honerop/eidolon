@@ -237,6 +237,16 @@ def prepare(source, target, attribution_path=None, cache_dir=None):
         project = edu.expand_project(project)
     except edu.EducationError as exc:
         raise AssetError(str(exc)) from exc
+    # Validate math before any image downloads or LaTeX subprocesses.
+    import importlib.util
+    latex_path = Path(os.environ.get("EIDOLON_LATEX_SOURCE", str(Path(__file__).with_name("latex_assets.py"))))
+    latex_spec = importlib.util.spec_from_file_location("eidolon_latex", latex_path)
+    latex = importlib.util.module_from_spec(latex_spec)
+    latex_spec.loader.exec_module(latex)
+    try:
+        latex.validate_project(project)
+    except latex.LatexError as exc:
+        raise AssetError(str(exc)) from exc
     credits = []
     if "music" in project:
         project["music"] = _absolute(project["music"], root)
@@ -267,6 +277,10 @@ def prepare(source, target, attribution_path=None, cache_dir=None):
         elif "src" in media:
             media["src"] = _absolute(media["src"], root)
     target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        latex.materialize_project(project, target.parent)
+    except latex.LatexError as exc:
+        raise AssetError(str(exc)) from exc
     target.write_text(json.dumps(project, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if attribution_path and credits:
         ap = Path(attribution_path)
