@@ -1,6 +1,40 @@
 {
   "nodes": {
+    "babel": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1792859965,
+        "narHash": "sha256-FMn8pJ4PZMkMr6uFuO7LaRh+uuTfYuu3cr5aAiU6GuI=",
+        "owner": "honerop",
+        "repo": "babel",
+        "rev": "ef4134c30be9d70af6be60846acaa16d1deb6682",
+        "type": "github"
+      },
+      "original": {
+        "owner": "honerop",
+        "repo": "babel",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
+      "locked": {
+        "lastModified": 1792502884,
+        "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
       "locked": {
         "lastModified": 1792502884,
         "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
@@ -18,7 +52,8 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "babel": "babel",
+        "nixpkgs": "nixpkgs_2"
       }
     }
   },

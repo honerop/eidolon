@@ -1,11 +1,11 @@
-name: Render Zig showcase MP4
+name: Render full Babel showcase MP4
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - 'src/**'
+      - director.babel
       - examples/math-explainer.json
       - .github/workflows/render-showcase.yml
 
@@ -16,17 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Render showcase through native Zig engine
-        run: EIDOLON_SKIP_TTS=1 nix run .
-      - name: Verify MP4 and subtitle
+      - name: Render narrated mathematical explainer through Babel
+        run: nix run .
+      - name: Verify narrated MP4 and subtitle output
         run: |
           test -s showcase.mp4
-          test -f showcase.srt
+          test -s showcase.srt
           file showcase.mp4 | grep -qi 'ISO Media'
-      - uses: actions/upload-artifact@v4
+      - name: Upload completed Babel-generated video
+        uses: actions/upload-artifact@v4
         with:
-          name: eidolon-zig-showcase-mp4
+          name: eidolon-showcase-narrated-mp4
           path: |
             showcase.mp4
             showcase.srt
+          if-no-files-found: error
           retention-days: 14

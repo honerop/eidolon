@@ -1,0 +1,55 @@
+# Self-contained Babel YUV4MPEG2 (Y4M) video generator, without external encoders.
+# Set BABEL_VIDEO_SPEC (JSON path) and BABEL_VIDEO_OUTPUT (output .y4m path).
+# BABEL fswrite currently writes UTF-8, so frames use ASCII-safe YUV420 samples.
+# This is a low-color, uncompressed video generator, not an MP4 encoder.
+
+ival obj key fallback = if hasfield obj key asint field obj key fallback
+sval obj key fallback = if hasfield obj key astext field obj key fallback
+items scene = if hasfield scene "elements" field scene "elements" array _
+span scene fps = if hasfield scene "frames" ival scene "frames" 1 * ival scene "duration" 1 fps
+scene_total scenes fps i = if >= i size scenes 0 + span get scenes i fps scene_total scenes fps + i 1
+at_scene scenes fps time i = if < time span get scenes i fps put put record _ "scene" get scenes i "time" boxint time at_scene scenes fps - time span get scenes i fps + i 1
+
+fraction frame count = / * frame 1000 max 1 - count 1
+smooth t = / * * t t - 3000 * 2 t 1000000
+progress shape frame count = if == sval shape "ease" "linear" "smooth" smooth fraction frame count fraction frame count
+start shape key = if hasfield shape "from" ival field shape "from" key ival shape key 0 ival shape key 0
+finish shape key = if hasfield shape "to" ival field shape "to" key ival shape key 0 ival shape key 0
+anim shape key frame count = + start shape key / * - finish shape key start shape key progress shape frame count 1000
+
+# Different fills map to luminance, not full RGB.
+shade name = if == name "white" "~" if == name "cyan" "x" if == name "yellow" "u" if == name "gray" "T" if == name "grey" "T" if == name "blue" "M" if == name "red" "f" if == name "black" " " if == name "navy" "0" "x"
+
+# Built-in 3x5 ASCII bitmap font: each glyph is fifteen 0/1 characters.
+glyph ch = if == ch "A" "010101111101101" if == ch "B" "110101110101110" if == ch "C" "011100100100011" if == ch "D" "110101101101110" if == ch "E" "111100110100111" if == ch "F" "111100110100100" if == ch "G" "011100101101011" if == ch "H" "101101111101101" if == ch "I" "111010010010111" if == ch "J" "001001001101010" if == ch "K" "101101110101101" if == ch "L" "100100100100111" if == ch "M" "101111111101101" if == ch "N" "101111111101101" if == ch "O" "010101101101010" if == ch "P" "110101110100100" if == ch "Q" "010101101111011" if == ch "R" "110101110101101" if == ch "S" "011100010001110" if == ch "T" "111010010010010" if == ch "U" "101101101101111" if == ch "V" "101101101101010" if == ch "W" "101101111111101" if == ch "X" "101101010101101" if == ch "Y" "101101010010010" if == ch "Z" "111001010100111" if == ch "0" "111101101101111" if == ch "1" "010110010010111" if == ch "2" "110001010100111" if == ch "3" "110001010001110" if == ch "4" "101101111001001" if == ch "5" "111100110001110" if == ch "6" "011100110101010" if == ch "7" "111001010010010" if == ch "8" "010101010101010" if == ch "9" "010101011001110" if == ch ":" "000010000010000" if == ch "." "000000000000010" if == ch "-" "000000111000000" if == ch "+" "000010111010000" if == ch "?" "110001010000010" "000000000000000"
+scale shape = clamp ival shape "scale" 1 1 12
+textx shape x frame count = - x anim shape "x" frame count
+texty shape y frame count = - y anim shape "y" frame count
+charpos shape x frame count = / textx shape x frame count * 4 scale shape
+bitpos shape x y frame count = + * / texty shape y frame count scale shape 3 / % textx shape x frame count * 4 scale shape scale shape
+letter shape x frame count = listat split upper sval shape "value" "" "" charpos shape x frame count
+textpixel shape x y frame count = if and and >= textx shape x frame count 0 >= texty shape y frame count 0 and and < texty shape y frame count * 5 scale shape < % textx shape x frame count * 4 scale shape * 3 scale shape < charpos shape x frame count len sval shape "value" "" == listat split glyph letter shape x frame count "" bitpos shape x y frame count "1" false
+
+rectpixel shape x y frame count = and and >= x anim shape "x" frame count < x + anim shape "x" frame count anim shape "width" frame count and >= y anim shape "y" frame count < y + anim shape "y" frame count anim shape "height" frame count
+circlepixel shape x y frame count = <= + * - x anim shape "cx" frame count - x anim shape "cx" frame count * - y anim shape "cy" frame count - y anim shape "cy" frame count * anim shape "r" frame count anim shape "r" frame count
+hit shape x y frame count = if == sval shape "kind" "rect" "rect" rectpixel shape x y frame count if == sval shape "kind" "circle" "circle" circlepixel shape x y frame count if == sval shape "kind" "text" "text" textpixel shape x y frame count false
+paint shapes x y frame count i current = if >= i size shapes current paint shapes x y frame count + i 1 if hit get shapes i x y frame count shade sval get shapes i "fill" "white" current
+color scene x y frame count = paint items scene x y frame count 0 shade sval scene "background" "black"
+
+# Uncompressed YUV420 planes; ASCII bytes make fswrite safe for this limited video.
+repeat value n = if <= n 0 "" if == n 1 value if == % n 2 0 repeat concat value value / n 2 concat value repeat concat value value / - n 1 2
+plot state = put put state "raw" boxstr concat astext field state "raw" color field state "scene" % asint field state "at" asint field state "width" / asint field state "at" asint field state "width" asint field state "time" asint field state "count" "at" boxint + asint field state "at" 1
+luma state found = iterate "plot" * asint field state "width" asint field state "height" put put put put put put put record _ "scene" field found "scene" "time" field found "time" "count" boxint span field found "scene" asint field state "fps" "width" field state "width" "height" field state "height" "at" boxint 0 "raw" boxstr ""
+next_frame state = put put state "video" boxstr concat astext field state "video" concat concat "FRAME\n" astext field luma state at_scene field field state "project" "scenes" asint field state "fps" asint field state "index" 0 "raw" astext field state "chroma" "index" boxint + asint field state "index" 1
+
+project = json fsread environ "BABEL_VIDEO_SPEC"
+width = * / clamp ival project "width" 160 16 320 2 2
+height = * / clamp ival project "height" 90 16 180 2 2
+fps = clamp ival project "fps" 12 1 24
+frames = min 240 scene_total field project "scenes" fps 0
+chroma = repeat "~" / * width height 4
+header = concat concat concat concat concat concat "YUV4MPEG2 W" str width " H" str height " F" str fps ":1 Ip A1:1 C420jpeg\n"
+initial = put put put put put put put record _ "project" project "width" boxint width "height" boxint height "fps" boxint fps "chroma" boxstr concat chroma chroma "index" boxint 0 "video" boxstr header
+result = iterate "next_frame" frames initial
+fswrite environ "BABEL_VIDEO_OUTPUT" astext field result "video"
+print concat concat "Wrote " str frames " Y4M frames"
