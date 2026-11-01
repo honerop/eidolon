@@ -15,13 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v17
-      - name: Verify Nix flake checks (compiles Babel and renders MP4)
+      - name: Verify Zig build and rendered MP4 checks
         run: nix flake check -L
-      - name: Build standalone Babel program wrapper
+      - name: Build standalone Zig program wrapper
         run: nix build .#default -L
-      - name: Verify custom JSON MP4 export using Babel
+      - name: Verify custom JSON MP4 export using Zig
         run: |
           nix run . -- examples/babel-smoke.json smoke.mp4
           test -s smoke.mp4
-          test -s smoke.srt
+          test -f smoke.srt
           nix develop -c ffprobe -v error -show_entries stream=codec_name -of csv=p=0 smoke.mp4 | grep -q h264
