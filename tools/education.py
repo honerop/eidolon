@@ -293,6 +293,8 @@ def neuron(spec, width, height):
 
 
 def simulation(spec, width, height):
+    if spec.get("model", "integrate-and-fire") != "integrate-and-fire":
+        fail("simulation.model must be integrate-and-fire")
     values = bounded_list(spec.get("input"), "simulation.input", 2, 100)
     values = [number(v, "simulation.input") for v in values]
     decay = number(spec.get("decay", .85), "simulation.decay", 0, 1)
