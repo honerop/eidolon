@@ -1,29 +1,23 @@
-name: Babel video smoke test
+name: Zig renderer checks
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'flake.nix'
+      - '.github/workflows/ci.yml'
   pull_request:
+  workflow_dispatch:
 
 jobs:
-  smoke:
+  zig:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Check out Babel compiler
-        run: git clone --depth 1 https://github.com/honerop/babel.git /tmp/babel
-      - name: Generate example video using Babel only
-        env:
-          BABEL_VIDEO_SPEC: examples/explainer.json
-          BABEL_VIDEO_OUTPUT: explainer.y4m
-        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run render.babel
-      - name: Verify Y4M video using Babel only
-        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run tests/smoke.babel
-      - name: Generate high quality vector animation in Babel
-        env:
-          BABEL_VIDEO_SPEC: examples/showcase.json
-          BABEL_VIDEO_PREVIEW: showcase.svg
-        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run preview.babel
-      - name: Verify vector animation in Babel
-        run: cargo run --quiet --manifest-path /tmp/babel/Cargo.toml -- run tests/preview_smoke.babel
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - name: Compile and run Zig unit tests
+        run: |
+          nix develop -c sh -c 'zig version; zig test src/support.zig -lc; zig test src/svg.zig -lc; zig test src/main.zig -lc'
+      - name: Build Zig director and render MP4
+        run: nix flake check -L
