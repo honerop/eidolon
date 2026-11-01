@@ -74,12 +74,17 @@ const Renderer = struct {
         var index: usize = 0;
         for (scenes) |scene| {
             for (0..scene.frames) |local_frame| {
-                const content = try svg.document(self.a, scene.data, local_frame, scene.frames,
+                // SVG strings can be large. Do not accumulate every frame's
+                // temporary allocations in the video-wide arena.
+                var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+                defer scratch.deinit();
+                const tmp = scratch.allocator();
+                const content = try svg.document(tmp, scene.data, local_frame, scene.frames,
                     self.width, self.height);
-                const svg_file = try self.indexed("frame", index, "svg");
-                const png_file = try self.indexed("frame", index, "png");
-                try s.writeFile(self.a, svg_file, content);
-                try s.run(self.a, self.rsvg, &.{ "--output", png_file, svg_file });
+                const svg_file = try s.fmt(tmp, "{s}/frame-{d:0>6}.svg", .{self.work, index});
+                const png_file = try s.fmt(tmp, "{s}/frame-{d:0>6}.png", .{self.work, index});
+                try s.writeFile(tmp, svg_file, content);
+                try s.run(tmp, self.rsvg, &.{ "--output", png_file, svg_file });
                 index += 1;
             }
         }
