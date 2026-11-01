@@ -1,0 +1,267 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "scenes": [
+    {
+      "duration": 5,
+      "background": "ink",
+      "narration": "A neuron receives signals through its dendrites. Its cell body integrates inputs, while the axon carries electrical activity toward terminals.",
+      "educational": {
+        "type": "neuron",
+        "title": "Anatomy of a neuron",
+        "callouts": [
+          {
+            "text": "Information flows to the terminals",
+            "position": [
+              0.43,
+              0.9
+            ],
+            "color": "ice"
+          }
+        ]
+      }
+    },
+    {
+      "duration": 4,
+      "background": "navy",
+      "narration": "An action potential travels down the axon as a wave of electrical activity.",
+      "educational": {
+        "type": "signal",
+        "title": "An electrical signal travels",
+        "path": [
+          [
+            0.12,
+            0.53
+          ],
+          [
+            0.35,
+            0.53
+          ],
+          [
+            0.54,
+            0.53
+          ],
+          [
+            0.74,
+            0.53
+          ],
+          [
+            0.9,
+            0.4
+          ]
+        ],
+        "color": "orange",
+        "start_percent": 10,
+        "end_percent": 95,
+        "callouts": [
+          {
+            "text": "The moving dot is a visual model",
+            "position": [
+              0.12,
+              0.78
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "duration": 5,
+      "background": "ink",
+      "narration": "At a chemical synapse, an arriving signal can trigger neurotransmitter release. Neurotransmitters then interact with receptors on the next cell.",
+      "educational": {
+        "type": "diagram",
+        "title": "From one neuron to the next",
+        "layout": "horizontal",
+        "nodes": [
+          {
+            "id": "impulse",
+            "label": "Signal arrives",
+            "color": "cyan"
+          },
+          {
+            "id": "release",
+            "label": "Vesicle release",
+            "color": "blue"
+          },
+          {
+            "id": "binding",
+            "label": "Receptor binding",
+            "color": "purple"
+          },
+          {
+            "id": "response",
+            "label": "Cell response",
+            "color": "green"
+          }
+        ],
+        "edges": [
+          {
+            "from": "impulse",
+            "to": "release"
+          },
+          {
+            "from": "release",
+            "to": "binding"
+          },
+          {
+            "from": "binding",
+            "to": "response"
+          }
+        ]
+      }
+    },
+    {
+      "duration": 5,
+      "background": "navy",
+      "narration": "Neural activity can be represented by graphs. Here, an example firing-rate trace rises and falls over a series of observations.",
+      "educational": {
+        "type": "graph",
+        "title": "Firing frequency: example trace",
+        "series": [
+          {
+            "name": "Example activity",
+            "color": "cyan",
+            "values": [
+              2,
+              3,
+              4,
+              8,
+              12,
+              11,
+              7,
+              4,
+              3,
+              6,
+              10,
+              9,
+              5,
+              2
+            ]
+          }
+        ],
+        "min": 0,
+        "max": 14,
+        "reveal": true,
+        "callouts": [
+          {
+            "text": "Illustrative data, not an experimental recording",
+            "position": [
+              0.12,
+              0.94
+            ],
+            "color": "muted"
+          }
+        ]
+      }
+    },
+    {
+      "duration": 4,
+      "background": "ink",
+      "narration": "Stronger input can bring a neuron closer to its firing threshold. This comparison is conceptual, not a biological measurement.",
+      "educational": {
+        "type": "comparison",
+        "title": "Comparing input strength",
+        "max": 100,
+        "items": [
+          {
+            "name": "Weak input",
+            "value": 25,
+            "color": "blue"
+          },
+          {
+            "name": "Moderate input",
+            "value": 55,
+            "color": "purple"
+          },
+          {
+            "name": "Strong input",
+            "value": 90,
+            "color": "orange"
+          }
+        ],
+        "callouts": [
+          {
+            "text": "Illustrative relative strengths",
+            "position": [
+              0.1,
+              0.93
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "duration": 5,
+      "background": "navy",
+      "narration": "A simplified sequence starts with a resting state, proceeds through depolarization, then repolarization and recovery.",
+      "educational": {
+        "type": "timeline",
+        "title": "Phases of an action potential",
+        "events": [
+          {
+            "at": 0,
+            "label": "Rest"
+          },
+          {
+            "at": 1,
+            "label": "Depolarization"
+          },
+          {
+            "at": 2,
+            "label": "Repolarization"
+          },
+          {
+            "at": 3,
+            "label": "Recovery"
+          }
+        ]
+      }
+    },
+    {
+      "duration": 6,
+      "background": "ink",
+      "narration": "A leaky integrate and fire model shows how incoming current accumulates, decays, and triggers spikes when it reaches a threshold.",
+      "educational": {
+        "type": "simulation",
+        "title": "A simple neuron simulation",
+        "model": "integrate-and-fire",
+        "input": [
+          0.12,
+          0.14,
+          0.31,
+          0.45,
+          0.2,
+          0.34,
+          0.15,
+          0.6,
+          0.31,
+          0.12,
+          0.47,
+          0.44,
+          0.17,
+          0.53,
+          0.21,
+          0.4,
+          0.61,
+          0.12,
+          0.25,
+          0.32
+        ],
+        "decay": 0.82,
+        "threshold": 1,
+        "reset": 0,
+        "callouts": [
+          {
+            "text": "Simplified model, not biological data",
+            "position": [
+              0.12,
+              0.94
+            ],
+            "color": "muted"
+          }
+        ]
+      }
+    }
+  ]
+}
