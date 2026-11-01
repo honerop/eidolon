@@ -333,7 +333,6 @@ RENDERERS = {
     "signal": signal,
     "neuron": neuron,
     "simulation": simulation,
-    "equation": equation,
 }
 
 
@@ -353,6 +352,9 @@ def equation(spec, width, height):
                           "anchor": "center"},
                          min(90, 5 + index*14), min(100, 43 + index*14)))
     return out
+
+
+RENDERERS["equation"] = equation
 
 
 def callouts(spec, width, height):
