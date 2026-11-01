@@ -134,6 +134,10 @@
             "${app}/bin/eidolon" "${./examples/education-smoke.json}" "education-smoke.mp4"
             test -s education-smoke.mp4
             test -s education-smoke.srt
+            # Render actual LaTeX formula assets, not a mocked raster image.
+            "${app}/bin/eidolon" "${./examples/latex-smoke.json}" "latex-smoke.mp4"
+            test -s latex-smoke.mp4
+            test -s latex-smoke.srt
             ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name -of csv=p=0 education-smoke.mp4 | grep -q h264
           '';
         });
