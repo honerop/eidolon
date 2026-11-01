@@ -160,7 +160,7 @@ nix run . -- examples/neuroscience-education.json neuroscience.mp4
 
 The full [educational scene schema](docs/education.md) documents each scene
 type, units, animation behavior and limits. The
-[seven-scene neuroscience example](examples/neuroscience-education.json)
+[eight-scene neuroscience example](examples/neuroscience-education.json)
 is self-contained and requires no image downloads.
 
 **Implementation detail:** semantic expansion happens during asset preparation,
