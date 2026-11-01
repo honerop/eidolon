@@ -30,11 +30,11 @@ class LatexTests(unittest.TestCase):
         cases = [
             r"E=mc^{2}",
             r"\frac{d}{dx}x^{2}=2x",
-            r"\int_{0}^{\\infty}e^{-x}\\,dx=1",
-            r"\sum_{n=1}^{\\infty}\\frac{1}{n^{2}}=\\frac{\\pi^{2}}{6}",
-            r"\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix}",
-            r"\begin{cases}x^{2}&x>0\\\\0&x\\le0\\end{cases}",
-            r"\left(\\alpha+\\beta\\right)^{2}",
+            r"\int_{0}^{\infty}e^{-x}\,dx=1",
+            r"\sum_{n=1}^{\infty}\frac{1}{n^{2}}=\frac{\pi^{2}}{6}",
+            r"\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}",
+            r"\begin{cases}x^{2}&x>0\\0&x\le0\end{cases}",
+            r"\left(\alpha+\beta\right)^{2}",
         ]
         for expression in cases:
             with self.subTest(expression=expression):
@@ -43,9 +43,9 @@ class LatexTests(unittest.TestCase):
     def test_blocks_tex_primitives_and_invalid_input(self):
         cases = [
             r"\input{/etc/passwd}", r"\include{secret}", r"\write18{anything}",
-            r"\def\\evil{boom}", r"\csname input\\endcsname",
+            r"\def\evil{boom}", r"\csname input\endcsname",
             r"\catcode", r"\usepackage{shellesc}",
-            r"\begin{document}hello\\end{document}",
+            r"\begin{document}hello\end{document}",
             r"\begin{bmatrix} 1",
             r"\notacommand{x}", r"E=mc^2 % hidden content",
             r"\frac{a}{b}^^5c",
@@ -60,7 +60,7 @@ class LatexTests(unittest.TestCase):
         source = {"width": 640, "height": 360, "scenes": [{
             "duration": 3, "educational": {"type": "equation",
               "title": "Euler's identity",
-              "formulas": [{"latex": r"e^{i\\pi}+1=0", "position": [.5,.55],
+              "formulas": [{"latex": r"e^{i\pi}+1=0", "position": [.5,.55],
                             "font_size": 52, "color": "cyan"}]}
         }]}
         result = education.expand_project(source)
@@ -84,7 +84,7 @@ class LatexTests(unittest.TestCase):
 
     def test_cache_hit_skips_subprocess_and_preserves_animation(self):
         # Minimal 8x4 PNG header; sufficient for dimension/read logic.
-        png = latex.PNG_SIGNATURE + b"\\x00" * 8 + struct.pack(">II", 8, 4)
+        png = latex.PNG_SIGNATURE + b"\x00" * 8 + struct.pack(">II", 8, 4)
         calls = []
         def fake_render(source, shade, dest):
             calls.append((source, shade))
@@ -135,7 +135,7 @@ class LatexTests(unittest.TestCase):
               "value": "x^{2}+y^{2}=z^{2}", "x": 320, "y": 180}]
         }]}
         original = copy.deepcopy(project)
-        png = latex.PNG_SIGNATURE + b"\\x00" * 8 + struct.pack(">II", 100, 40)
+        png = latex.PNG_SIGNATURE + b"\x00" * 8 + struct.pack(">II", 100, 40)
         with tempfile.TemporaryDirectory() as td:
             src = Path(td) / "input.json"
             dest = Path(td) / "work" / "output.json"
