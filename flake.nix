@@ -59,16 +59,14 @@
           director = directorFor system;
           python = pkgs.python3.withPackages (ps: [ ps.edge-tts ]);
           fonts = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
-          tex = pkgs.texlive.combine {
-            inherit (pkgs.texlive) scheme-small standalone amsmath amsfonts xcolor;
-          };
+          tex = pkgs.texliveSmall.withPackages (ps: [ ps.standalone ps.preview ps.amsmath ps.amsfonts ps.xcolor ]);
         in pkgs.writeShellScriptBin "eidolon" ''
           set -euo pipefail
           export EIDOLON_DEFAULT_SPEC="${./examples/general-showcase.json}"
           export EIDOLON_EDUCATION_SOURCE="${./tools/education.py}"
           export EIDOLON_LATEX_SOURCE="${./tools/latex_assets.py}"
           export EIDOLON_PDFLATEX="${tex}/bin/pdflatex"
-          export EIDOLON_PDFTOCAIRO="${pkgs.poppler_utils}/bin/pdftocairo"
+          export EIDOLON_PDFTOCAIRO="${pkgs."poppler-utils"}/bin/pdftocairo"
           export EIDOLON_EDGE_TTS="${python}/bin/edge-tts"
           export EIDOLON_ESPEAK="${pkgs.espeak-ng}/bin/espeak-ng"
           export EIDOLON_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
@@ -151,7 +149,7 @@
             packages = [
               (compilerFor system)
               python pkgs.ffmpeg pkgs.librsvg pkgs.rustc
-              (pkgs.texlive.combine { inherit (pkgs.texlive) scheme-small standalone amsmath amsfonts xcolor; }) pkgs.poppler_utils
+              (pkgs.texliveSmall.withPackages (ps: [ ps.standalone ps.preview ps.amsmath ps.amsfonts ps.xcolor ])) pkgs."poppler-utils"
               pkgs.cargo pkgs.pkg-config pkgs.fontconfig
             ];
           };
