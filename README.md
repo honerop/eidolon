@@ -118,6 +118,50 @@ nix run github:honerop/eidolon -- images fetch "ancient stone fort" --result 2
 nix run github:honerop/eidolon -- images fetch "ancient stone fort" --license public-domain
 ```
 
+## Educational scenes (semantic JSON)
+
+Eidolon can generate educational visuals from *concepts*, without an LLM
+specifying individual frames or drawing coordinates. A deterministic compiler
+(`tools/education.py`) expands each `educational` scene into ordinary
+Babel-rendered shapes and animations. Existing `elements` still work.
+
+Supported educational scene types: **diagram** (connected concepts),
+**neuron** (labeled cell and traveling pulse), **signal** (moving event along
+a path), **graph** (multiple data series with progressive reveal),
+**timeline** (ordered events), **comparison** (animated bars), and
+**simulation** (leaky integrate-and-fire neuronal model). Callouts and a
+scene heading are available for every type. This is a semantic authoring
+layer, not an AI service.
+
+```json
+{
+  "width": 640, "height": 360, "fps": 12,
+  "scenes": [{
+    "duration": 5, "narration": "A neural signal moves along an axon.",
+    "educational": {
+      "type": "neuron",
+      "title": "How neurons carry signals"
+    }
+  }]
+}
+```
+
+```sh
+# From a local checkout:
+nix run . -- inspect examples/neuroscience-education.json
+nix run . -- examples/neuroscience-education.json neuroscience.mp4
+```
+
+The full [educational scene schema](docs/education.md) documents each scene
+type, units, animation behavior and limits. The
+[seven-scene neuroscience example](examples/neuroscience-education.json)
+is self-contained and requires no image downloads.
+
+**Implementation detail:** semantic expansion happens during asset preparation,
+while Babel still renders the timeline and frames. Directly invoking
+`eidolon-director` with unexpanded semantic JSON is not supported. Use the
+normal `eidolon` wrapper (or `tools/media_assets.py prepare`) instead.
+
 ## Video project format
 
 ```json
