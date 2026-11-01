@@ -31,7 +31,9 @@ nix run github:honerop/eidolon -- inspect video.json --json
 
 The executable writes `movie.mp4` and `movie.srt`. Audio is extended to
 fit narration, and subtitle timestamps follow the actual expanded timeline.
-Edge TTS is attempted first; espeak-ng is an offline fallback.
+Edge TTS is attempted first; espeak-ng is an offline fallback. Set
+`EIDOLON_OFFLINE_TTS=1` to use espeak-ng directly without network access.
+`EIDOLON_SKIP_TTS=1` removes synthesized speech entirely.
 
 ## High-level educational scenes
 
