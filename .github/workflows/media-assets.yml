@@ -9,6 +9,9 @@ on:
       - tools/project_inspect.py
       - tools/education.py
       - tests/test_education.py
+      - tools/latex_assets.py
+      - tests/test_latex.py
+      - examples/latex-smoke.json
       - examples/neuroscience-education.json
       - examples/education-smoke.json
       - examples/commons-image.json
