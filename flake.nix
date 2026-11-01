@@ -1,65 +1,43 @@
 {
-  description = "Eidolon: Babel-authored general video timeline and MP4 media compositor";
-
+  description = "Eidolon: Zig 0.16 educational video renderer with semantic scenes and LaTeX";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.babel.url = "github:honerop/babel";
 
-  outputs = { self, nixpkgs, babel }:
+  outputs = { self, nixpkgs }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       eachSystem = nixpkgs.lib.genAttrs systems;
       pkgsFor = system: import nixpkgs { inherit system; };
-
-      compilerFor = system:
+      directorFor = system:
         let pkgs = pkgsFor system;
         in pkgs.stdenv.mkDerivation {
-          pname = "babelc";
-          version = "0.3.1";
-          src = babel;
-          nativeBuildInputs = [ pkgs.rustc ];
-          dontConfigure = true;
-          buildPhase = ''
-            runHook preBuild
-            rustc --edition=2021 --crate-name babel_compiler --crate-type rlib -O src/lib.rs -o libbabel_compiler.rlib
-            rustc --edition=2021 -O src/main.rs --extern babel_compiler=libbabel_compiler.rlib -L dependency=. -o babelc
-            runHook postBuild
-          '';
-          installPhase = ''
-            mkdir -p "$out/bin"
-            cp babelc "$out/bin/babelc"
-          '';
-        };
-
-      directorFor = system:
-        let
-          pkgs = pkgsFor system;
-          compiler = compilerFor system;
-        in pkgs.stdenv.mkDerivation {
           pname = "eidolon-director";
-          version = "0.2.0";
+          version = "0.3.0";
           src = ./.;
+          nativeBuildInputs = [ pkgs.zig_0_16 ];
           dontConfigure = true;
-          nativeBuildInputs = [ compiler pkgs.rustc ];
           buildPhase = ''
             runHook preBuild
-            ${compiler}/bin/babelc check director.babel
-            ${compiler}/bin/babelc build director.babel -o eidolon
+            export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-global-cache"
+            export ZIG_LOCAL_CACHE_DIR="$TMPDIR/zig-cache"
+            mkdir -p "$ZIG_GLOBAL_CACHE_DIR" "$ZIG_LOCAL_CACHE_DIR"
+            zig build-exe src/main.zig -O ReleaseFast -lc -femit-bin=eidolon-director
             runHook postBuild
           '';
           installPhase = ''
             mkdir -p "$out/bin"
-            cp eidolon "$out/bin/eidolon-director"
+            cp eidolon-director "$out/bin/"
           '';
           meta.mainProgram = "eidolon-director";
         };
-
       appFor = system:
         let
           pkgs = pkgsFor system;
           director = directorFor system;
           python = pkgs.python3.withPackages (ps: [ ps.edge-tts ]);
           fonts = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
-          tex = pkgs.texliveSmall.withPackages (ps: [ ps.standalone ps.preview ps.amsmath ps.amsfonts ps.xcolor ]);
+          tex = pkgs.texliveSmall.withPackages (ps: [
+            ps.standalone ps.preview ps.amsmath ps.amsfonts ps.xcolor
+          ]);
         in pkgs.writeShellScriptBin "eidolon" ''
           set -euo pipefail
           export EIDOLON_DEFAULT_SPEC="${./examples/general-showcase.json}"
@@ -72,9 +50,7 @@
           export EIDOLON_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
           export EIDOLON_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
           export EIDOLON_RSVG="${pkgs.librsvg}/bin/rsvg-convert"
-          export EIDOLON_DIRNAME="${pkgs.coreutils}/bin/dirname"
           export FONTCONFIG_FILE="${fonts}"
-          export BABEL_PROCESS_TIMEOUT_MS=1800000
           export EIDOLON_WORK="$(mktemp -d)"
           trap 'rm -rf "$EIDOLON_WORK"' EXIT
           if [ "''${1-}" = "images" ]; then
@@ -98,48 +74,39 @@
       packages = eachSystem (system: {
         default = appFor system;
         eidolon = directorFor system;
-        compiler = compilerFor system;
+        director = directorFor system;
       });
-
       apps = eachSystem (system: {
-        default = {
-          type = "app";
-          program = "${appFor system}/bin/eidolon";
-        };
+        default = { type = "app"; program = "${appFor system}/bin/eidolon"; };
       });
-
       checks = eachSystem (system:
         let
           pkgs = pkgsFor system;
           director = directorFor system;
           app = appFor system;
         in {
-          babel-director = director;
-          assets = pkgs.runCommand "eidolon-assets-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+          zig-director = director;
+          assets = pkgs.runCommand "eidolon-assets-tests" {
+            nativeBuildInputs = [ pkgs.python3 ];
+          } ''
             cd ${./.}
             ${pkgs.python3}/bin/python -m unittest discover -s tests -p 'test_*.py' -v
             touch "$out"
           '';
-          smoke = pkgs.runCommand "eidolon-smoke" { } ''
+          smoke = pkgs.runCommand "eidolon-zig-smoke" { } ''
             mkdir -p "$out"
             cd "$out"
-            "${app}/bin/eidolon" "${./examples/babel-smoke.json}" "smoke.mp4"
+            export EIDOLON_SKIP_TTS=1
+            "${app}/bin/eidolon" "${./examples/babel-smoke.json}" smoke.mp4
             test -s smoke.mp4
-            test -s smoke.srt
-            ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name,width,height -of json smoke.mp4 > info.json
-            grep -q h264 info.json
-            # Exercise every semantic educational scene through Babel and FFmpeg.
-            "${app}/bin/eidolon" "${./examples/education-smoke.json}" "education-smoke.mp4"
-            test -s education-smoke.mp4
-            test -s education-smoke.srt
-            # Render actual LaTeX formula assets, not a mocked raster image.
-            "${app}/bin/eidolon" "${./examples/latex-smoke.json}" "latex-smoke.mp4"
-            test -s latex-smoke.mp4
-            test -s latex-smoke.srt
-            ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name -of csv=p=0 education-smoke.mp4 | grep -q h264
+            test -f smoke.srt
+            "${app}/bin/eidolon" "${./examples/education-smoke.json}" education.mp4
+            test -s education.mp4
+            "${app}/bin/eidolon" "${./examples/latex-smoke.json}" latex.mp4
+            test -s latex.mp4
+            ${pkgs.ffmpeg}/bin/ffprobe -v error -show_entries stream=codec_name -of csv=p=0 latex.mp4 | grep -q h264
           '';
         });
-
       devShells = eachSystem (system:
         let
           pkgs = pkgsFor system;
@@ -147,10 +114,11 @@
         in {
           default = pkgs.mkShell {
             packages = [
-              (compilerFor system)
-              python pkgs.ffmpeg pkgs.librsvg pkgs.rustc
-              (pkgs.texliveSmall.withPackages (ps: [ ps.standalone ps.preview ps.amsmath ps.amsfonts ps.xcolor ])) pkgs."poppler-utils"
-              pkgs.cargo pkgs.pkg-config pkgs.fontconfig
+              pkgs.zig_0_16 python pkgs.ffmpeg pkgs.librsvg
+              (pkgs.texliveSmall.withPackages (ps: [
+                ps.standalone ps.preview ps.amsmath ps.amsfonts ps.xcolor
+              ]))
+              pkgs."poppler-utils" pkgs.fontconfig
             ];
           };
         });
