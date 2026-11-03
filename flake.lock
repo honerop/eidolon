@@ -5,26 +5,27 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1792859965,
-        "narHash": "sha256-FMn8pJ4PZMkMr6uFuO7LaRh+uuTfYuu3cr5aAiU6GuI=",
+        "lastModified": 1793700528,
+        "narHash": "sha256-bKU4xNOv6X/lztbHkUeFKWkx0dqDmdN8Rm9xvz7TBGI=",
         "owner": "honerop",
         "repo": "babel",
-        "rev": "ef4134c30be9d70af6be60846acaa16d1deb6682",
+        "rev": "e4b15a2298d9c51332ce40b53aa53d05544d3ce8",
         "type": "github"
       },
       "original": {
         "owner": "honerop",
         "repo": "babel",
+        "rev": "e4b15a2298d9c51332ce40b53aa53d05544d3ce8",
         "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1792502884,
-        "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
+        "lastModified": 1793540411,
+        "narHash": "sha256-fiPJ88izTVucjeo2EQ3jk4aWmLg03I1D4vxnX2QjEgE=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+        "rev": "0bb2eedc20e4739f29e8045034f2828ad7054f8f",
         "type": "github"
       },
       "original": {
