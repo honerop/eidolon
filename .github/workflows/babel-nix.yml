@@ -15,7 +15,7 @@ on:
       - tests/test_latex.py
       - examples/latex-smoke.json
       - examples/education-smoke.json
-      - .github/workflows/ain-nix.yml
+      - .github/workflows/babel-nix.yml
   workflow_dispatch:
 
 jobs:

@@ -1,3 +1,6 @@
+use system.process
+use system.fs
+
 # Eidolon general video director. Math plots are optional shapes, not the engine model.
 # External tools only encode H.264/AAC, rasterize SVG, and provide Edge speech.
 
@@ -27,14 +30,14 @@ pad2 n = if < n 10 concat "0" str n str n
 pad3 n = if < n 10 concat "00" str n if < n 100 concat "0" str n str n
 pad6 n = if < n 10 concat "00000" str n if < n 100 concat "0000" str n if < n 1000 concat "000" str n if < n 10000 concat "00" str n if < n 100000 concat "0" str n str n
 framename i ext = concat concat "frame-" pad6 i ext
-workpath name = pathjoin environ "EIDOLON_WORK" name
+workpath name = system_fs_join environ "EIDOLON_WORK" name
 project_file _ = if > size argv _ 0 astext get argv _ 0 environ "EIDOLON_DEFAULT_SPEC"
-project_root _ = trim astext field field processrun environ "EIDOLON_DIRNAME" a1 project_file _ "value" "stdout"
+project_root _ = trim astext field field system_process_run environ "EIDOLON_DIRNAME" a1 project_file _ "value" "stdout"
 video_project _ = json fsread project_file _
 video_fps _ = iv video_project _ "fps" 30
 video_width _ = iv video_project _ "width" 1280
 video_height _ = iv video_project _ "height" 720
-assetpath path = if starts path "/" path pathjoin project_root _ path
+assetpath path = if starts path "/" path system_fs_join project_root _ path
 pair_arg args flag value = ap ap args flag value
 ffstart _ = a4 "-y" "-hide_banner" "-loglevel" "error"
 media_info scene = field scene "media"
@@ -51,7 +54,7 @@ motion_filter scene = if == media_kind scene "video" "" if == sv media_info scen
 media_filter scene = concat concat if == media_kind scene "video" j3 "fps=" str video_fps _ "," "" if == sv media_info scene "fit" "cover" "contain" media_contain scene media_cover scene motion_filter scene
 media_input scene = if == media_kind scene "image" pair_arg pair_arg pair_arg ffstart _ "-loop" "1" "-framerate" str video_fps _ "-i" media_source scene pair_arg pair_arg ffstart _ "-stream_loop" "-1" "-i" media_source scene
 media_renderargs scene = ap pair_arg pair_arg pair_arg media_input scene "-vf" media_filter scene "-frames:v" str iv scene "frames" 1 "-start_number" str iv scene "start_frame" 0 workpath "media-%06d.png"
-media_render scene = if scene_has_media scene ok processrun environ "EIDOLON_FFMPEG" media_renderargs scene _
+media_render scene = if scene_has_media scene ok system_process_run environ "EIDOLON_FFMPEG" media_renderargs scene _
 media_base_args count = ap pair_arg pair_arg pair_arg pair_arg ffstart _ "-f" "lavfi" "-i" j6 "color=c=black:s=" str video_width _ "x" str video_height _ ":r=" str video_fps _ "-frames:v" str count "-start_number" "0" workpath "media-%06d.png"
 frame_codec args = pair_arg pair_arg pair_arg pair_arg args "-c:v" "libx264" "-pix_fmt" "yuv420p" "-crf" "17" "-movflags" "+faststart"
 mixed_inputs rate = pair_arg pair_arg pair_arg pair_arg ffstart _ "-framerate" str rate "-i" workpath "media-%06d.png" "-framerate" str rate "-i" workpath "frame-%06d.png"
@@ -64,12 +67,12 @@ now_text a = if hasfield a "narration" sv a "narration" "" ""
 ttsargs a = a7 "--voice" sv a "voice" "en-US-AndrewNeural" concat "--rate=" sv a "voice_rate" "-5%" "--text" now_text a "--write-media" voicefile iv a "index" 0
 voice_success result = and asbool field result "ok" == asint field field result "value" "code" 0
 fallback_args a = a7 "-v" "en-us" "-s" "155" "-w" voicefile iv a "index" 0 now_text a
-synth_fallback a result = if voice_success result _ ok processrun environ "EIDOLON_ESPEAK" fallback_args a
-synth a = if or hasfield a "audio" or == now_text a "" == environ "EIDOLON_SKIP_TTS" "1" _ synth_fallback a processrun environ "EIDOLON_EDGE_TTS" ttsargs a
+synth_fallback a result = if voice_success result _ ok system_process_run environ "EIDOLON_ESPEAK" fallback_args a
+synth a = if or hasfield a "audio" or == now_text a "" == environ "EIDOLON_SKIP_TTS" "1" _ synth_fallback a system_process_run environ "EIDOLON_EDGE_TTS" ttsargs a
 scene_audio a = if hasfield a "audio" assetpath sv a "audio" "" if or == now_text a "" == environ "EIDOLON_SKIP_TTS" "1" "" voicefile iv a "index" 0
 ffprobe_args filename = a7 "-v" "error" "-show_entries" "format=duration" "-of" "default=noprint_wrappers=1:nokey=1" filename
 msec text = + * 1000 num before trim text "." num strjoin listtake split concat after trim text "." "000" "" 3 ""
-probelen filename = msec astext field field processrun environ "EIDOLON_FFPROBE" ffprobe_args filename "value" "stdout"
+probelen filename = msec astext field field system_process_run environ "EIDOLON_FFPROBE" ffprobe_args filename "value" "stdout"
 audioms scene = if == scene_audio scene "" 0 probelen scene_audio scene
 index_scene s = put get field s "scenes" iv s "i" 0 "index" boxint iv s "i" 0
 index_advance s scene = put put s "indexed" push field s "indexed" scene "i" boxint + iv s "i" 0 1
@@ -121,7 +124,7 @@ scene_svg meta = astext field fold "append_shape" put put put record _ "svg" box
 svg_bg meta = if scene_has_media field meta "scene" "" j4 "<rect width=\"100%\" height=\"100%\" fill=\"" palette sv field meta "scene" "background" "ink" "\"/>" ""
 svg_at meta = j6 "<svg xmlns=\"http://www.w3.org/2000/svg\"" nat "width" iv meta "width" 1280 nat "height" iv meta "height" 720 ">" "<defs><marker id=\"ain-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 Z\" fill=\"#48dff0\"/></marker></defs>" j3 svg_bg meta scene_svg meta "</svg>"
 write_frame meta = fswrite svgfile iv meta "index" 0 svg_at meta
-raster_frame meta = ok processrun environ "EIDOLON_RSVG" a4 "--output" pngfile iv meta "index" 0 svgfile iv meta "index" 0 "--keep-aspect-ratio"
+raster_frame meta = ok system_process_run environ "EIDOLON_RSVG" a4 "--output" pngfile iv meta "index" 0 svgfile iv meta "index" 0 "--keep-aspect-ratio"
 ff_video_args fps = ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap ap a1 "-y" "-hide_banner" "-loglevel" "error" "-framerate" str video_fps _ "-i" workpath "frame-%06d.png" "-c:v" "libx264" "-pix_fmt" "yuv420p" "-crf" "17" "-movflags" "+faststart" workpath "silent.mp4"
 seconds_ms ms = j3 str / ms 1000 "." pad3 % ms 1000
 audio_indexed state = get field state "timeline" iv state "i" 0
@@ -170,16 +173,16 @@ frame_state = iterate "frame_step" total_frames put put put put put put record _
 each "write_frame" field frame_state "frames"
 has_media = asbool fold "seen_media" boxbool false timeline
 print "eidolon: rendering scene footage and image backgrounds"
-if has_media ok processrun environ "EIDOLON_FFMPEG" media_base_args total_frames _
+if has_media ok system_process_run environ "EIDOLON_FFMPEG" media_base_args total_frames _
 if has_media each "media_render" timeline _
 print "eidolon: rasterizing SVG with librsvg"
 each "raster_frame" field frame_state "frames"
 print "eidolon: encoding H.264 MP4"
-ok processrun environ "EIDOLON_FFMPEG" if has_media mixed_output fps ff_video_args fps
+ok system_process_run environ "EIDOLON_FFMPEG" if has_media mixed_output fps ff_video_args fps
 length_ms = / * total_frames 1000 fps
 audio_state = music_apply iterate "audio_step" size timeline put put put put put put put record _ "timeline" timeline "i" boxint 0 "input" boxint 2 "args" sound_base length_ms "filters" boxstr "" "refs" boxstr "[sil]" "fps" boxint fps
 print "eidolon: exporting audio and subtitles"
-ok processrun environ "EIDOLON_FFMPEG" if > iv audio_state "input" 2 2 sound_args audio_state length_ms output_file copy_args output_file
+ok system_process_run environ "EIDOLON_FFMPEG" if > iv audio_state "input" 2 2 sound_args audio_state length_ms output_file copy_args output_file
 subtitles = iterate "sub_step" size timeline put put put put record _ "timeline" timeline "text" boxstr "" "i" boxint 0 "fps" boxint fps
 fswrite replace output_file ".mp4" ".srt" sv subtitles "text" ""
 print concat "eidolon: created " output_file

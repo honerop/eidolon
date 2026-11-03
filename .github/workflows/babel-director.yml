@@ -5,12 +5,12 @@ on:
     paths:
       - director.babel
       - examples/babel-smoke.json
-      - .github/workflows/ain-director.yml
+      - .github/workflows/babel-director.yml
   pull_request:
   workflow_dispatch:
 
 jobs:
-  ain-video:
+  babel-video:
     runs-on: ubuntu-latest
     env:
       EIDOLON_DIRNAME: /usr/bin/dirname

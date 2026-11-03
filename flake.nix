@@ -2,7 +2,7 @@
   description = "Eidolon: Babel-authored general video timeline and MP4 media compositor";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.babel.url = "github:honerop/babel";
+  inputs.babel.url = "github:honerop/babel/e4b15a2298d9c51332ce40b53aa53d05544d3ce8";
 
   outputs = { self, nixpkgs, babel }:
     let
@@ -20,6 +20,7 @@
           dontConfigure = true;
           buildPhase = ''
             runHook preBuild
+            export CARGO_MANIFEST_DIR="$PWD"
             rustc --edition=2021 --crate-name babel_compiler --crate-type rlib -O src/lib.rs -o libbabel_compiler.rlib
             rustc --edition=2021 -O src/main.rs --extern babel_compiler=libbabel_compiler.rlib -L dependency=. -o babelc
             runHook postBuild
