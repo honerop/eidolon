@@ -298,3 +298,8 @@ z-order and in/out), **time-based keyframes**, **transitions/effects**,
 **preview without full export**, and **frame streaming** to reduce
 intermediate SVG/PNG files. Those will matter for broad video creation more
 than adding more mathematical functions.
+
+
+## Babel segment imports
+
+The native MP4 director imports `system.process` and `system.fs` from Babel's versioned segment catalog. Subprocess calls and path joining use their namespaced Babel wrappers, while older primitives remain in place for compatibility with the SVG and Y4M tools. The Nix compiler input is pinned to the Babel module resolver revision; use `nix flake lock` to refresh a stale lockfile after updating the compiler input.
